@@ -1,4 +1,5 @@
 from multiprocessing import context
+import re
 from xml.parsers.expat import model
 from django.shortcuts import redirect, render
 from django.db.models import Q
@@ -91,6 +92,16 @@ def room(request, pk):
     context = {'room': room, 'room_messages':room_messages, 'participants': participants}
 
     return render(request, 'base/room.html', context)
+
+
+def user_profile(request, pk):
+    user = User.objects.get(id=pk)
+    topics = Topic.objects.all()
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    context = {'user': user, 'topics': topics, 'rooms': rooms, 'room_messages': room_messages}
+
+    return render(request, 'base/profile.html', context)
 
 
 @login_required(login_url='login')

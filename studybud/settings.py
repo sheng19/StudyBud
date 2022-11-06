@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'base.apps.BaseConfig',
     'rest_framework',
     "corsheaders",
+    "drf_yasg",
 ]
+
+AUTH_USER_MODEL = 'base.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,7 +55,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-
 ]
 
 ROOT_URLCONF = 'studybud.urls'
@@ -124,10 +126,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/images/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
+MEDIA_ROOT = BASE_DIR / 'static/images'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

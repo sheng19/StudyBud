@@ -1,16 +1,12 @@
-from django.shortcuts import redirect, render
-from django.db.models import Q
+import re
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from django.urls import is_valid_path
 from django.contrib import messages
-from django.contrib import auth
-from .models import Room, Topic, Message
-from .forms import RoomForm, UserForm
-from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm
-# Create your views here.
+from .models import Room, Topic, Message, User
+from .forms import RoomForm, UserForm, MyUserCreationForm
 
 
 def login_page(request):
@@ -19,21 +15,20 @@ def login_page(request):
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
+        email = request.POST.get('email')
         password = request.POST.get('password')
-
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(email=email)
         except:
             messages.error(request, 'User does not exist')
 
-        user = authenticate(request, username=username, password=password)
-
+        user = authenticate(request, email=email, password=password)
+        print(user)
         if user:
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'Username or password does not exist')
+            messages.error(request, 'Email or password does not exist')
 
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
@@ -45,17 +40,22 @@ def logout_user(request):
 
 
 def register_page(request):
-    context = {'form': UserCreationForm()}
+    context = {'form': MyUserCreationForm()}
 
     if request.user.is_authenticated:
         return redirect('home')
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
+            print(user)
+            print(user.email)
             user.save()
             login(request, user)
             return redirect('home')
+        else:
+            messages.error(request, 'An error occurred during registration')
+
     return render(request, 'base/login_register.html', context)
 
 
@@ -180,13 +180,16 @@ def delete_message(request, pk):
 @login_required(login_url='login')
 def update_user(request):
     user = request.user
-    form = UserForm(instance=request.user)
+    form = UserForm(instance=user)
 
-    if request.method == "POST":
-        form = UserForm(request.POST, instance=user)
+    if request.method == 'POST':
+        form = UserForm(request.POST, request.FILES, instance=user)
+
         if form.is_valid():
             form.save()
             return redirect('user_profile', pk=user.id)
+        else:
+            print('error', form.errors)
     return render(request, 'base/update-user.html', {'form': form})
 
 
